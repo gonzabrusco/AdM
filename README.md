@@ -18,8 +18,10 @@ Existen tres familias de Cortex M. Los Cortex M0 estan diseñados para se de baj
 El set de instrucciones Thumb permite una mayor densidad de código porque es un set de instrucciones de 16 bits (a diferencia del ARM que es de 32 bits). Eso significa que para la misma memoria flash usando el set de instrucciones Thumb, se pueden almacenar muchas más instrucciones (programas más grandes), por ende, se obtiene una mayor densidad de código.
 
 ### 3. ¿Qué entiende por arquitectura load-store? ¿Qué tipo de instrucciones no posee este tipo de arquitectura?
+Una arquitectura Load-Store se destaca porque las unicas instrucciones que acceden a la memoria son las de carga y almacenamiento (load y store). Estas instrucciones trabajan desde los registros hacia la memoria y viceversa. En cambio, el resto de las intrucciones de la ISA trabajan únicamente con los registros (no tienen acceso a la memoria). Entonces podemos decir, que este tipo de arquitecturas no tienen instrucciones que traigan datos de memoria y hagan operaciones con esos valores (o hagan operaciones y guarden en memoria). 
 
 ### 4. ¿Cómo es el mapa de memoria de la familia?
+
 ### 5. ¿Qué ventajas presenta el uso de los “shadowed pointers” del PSP y el MSP?
 ### 6. Describa los diferentes modos de privilegio y operación del Cortex M, sus relaciones y como se conmuta de uno al otro. Describa un ejemplo en el que se pasa del modo privilegiado a no priviligiado y nuevamente a privilegiado.
 ### 7. ¿Qué se entiende por modelo de registros ortogonal? Dé un ejemplo
@@ -34,16 +36,24 @@ El set de instrucciones Thumb permite una mayor densidad de código porque es un
 ### 16. ¿Cómo cambia la operación de stacking al utilizar la unidad de punto flotante?
 ### 17. Explique las características avanzadas de atención a interrupciones: tail chaining y late arrival.
 ### 18. ¿Qué es el systick? ¿Por qué puede afirmarse que su implementación favorece la portabilidad de los sistemas operativos embebidos?
+El Systick es el periferico que lleva la base de tiempo para los sistemas operativos. La ventaja de que este implementado como parte de la IP de ARM hace que los sistemas operativos que hacen uso del mismo sean facilmente portables entre procesadores Cortex (ej. FreeRTOS).
 ### 19. ¿Qué funciones cumple la unidad de protección de memoria (MPU)?
+La funcion del MPU es definir permisos y atributos de memoria. Por ejemplo, sirve para proteger la memoria de un Task de un RTOS del acceso desde otro Task que lo pueda corromper. Tambien sirve para proteger regiones de memoria del acceso desde tasks sin privilegio. Permite marcar sectores de memoria como non-executable para protegernos de ataques de inyección de codigo en la SRAM.
 ### 20. ¿Cuántas regiones pueden configurarse como máximo? ¿Qué ocurre en caso de haber solapamientos de las regiones? ¿Qué ocurre con las zonas de memoria no cubiertas por las regiones definidas?
+Permite configurar hasta 8 regiones como máximo. Si hay solapamiento de regiones, en la zona solapada los permisos que rigen son los de la región con mayor numero. Por ejemplo si la región 1 y región 4 se solapan, entonces en el espacio de memoria que se produce el solapamiento, los atributos y permisos de la región 4 aplican a esa zona. Si se intenta acceder a una zona de memoria no definida en el MPU, esa transferencia es bloqueada y se produce una exceptión.
 ### 21. ¿Para qué se suele utilizar la excepción PendSV? ¿Cómo se relaciona su uso con el resto de las excepciones? Dé un ejemplo
+
 ### 22. ¿Para qué se suele utilizar la excepción SVC? Expliquelo dentro de un marco de un sistema operativo embebido.
 
 ## ISA
 ### 1. ¿Qué son los sufijos y para qué se los utiliza? Dé un ejemplo
+
 ### 2. ¿Para qué se utiliza el sufijo ‘s’? Dé un ejemplo
+
 ### 3. ¿Qué utilidad tiene la implementación de instrucciones de aritmética saturada? Dé un ejemplo con operaciones con datos de 8 bits.
+
 ### 4. Describa brevemente la interfaz entre assembler y C ¿Cómo se reciben los argumentos de las funciones? ¿Cómo se devuelve el resultado? ¿Qué registros deben guardarse en la pila antes de ser modificados?
+
 ### 5. ¿Qué es una instrucción SIMD? ¿En qué se aplican y que ventajas reporta su uso? Dé un ejemplo.
 
 
