@@ -24,16 +24,20 @@ Una arquitectura Load-Store se destaca porque las unicas instrucciones que acced
 El mapa de memoria es un continuo de direcciones donde todos los perifericos del microcontrolador estan mapeados. Como máximo puede direccionar 4G direcciones. 
 
 ### 5. ¿Qué ventajas presenta el uso de los “shadowed pointers” del PSP y el MSP?
+El MSP es el Main Stack Pointer y es usado durante la ejecución del programa en modo privilegiado. En cambio el PSP es el Processor Stack Pointer y es usado por las tareas cuando se ejecutan en modo no privilegiado. Este es el tipico uso de los Stack Pointers cuando se ejecuta un sistema operativo. Si el programa es simple y no tiene S.O., entonces en general unicamente se usa el MSP. 
 
 ### 6. Describa los diferentes modos de privilegio y operación del Cortex M, sus relaciones y como se conmuta de uno al otro. Describa un ejemplo en el que se pasa del modo privilegiado a no priviligiado y nuevamente a privilegiado.
+El modo privilegiado de ejecución tiene acceso a todos los recursos del sistema mientras que el modo no privilegiado tiene el acceso restringido. El acceso a la memoria durante la ejecucion no privilegiada va a estar definido por la configuracion del MPU. Y a su vez, el MPU unicamente puede ser configurado cuando la tarea se encuentra en modo privilegiado. Para pasar de modo privilegiado a modo no privilegiado, se realiza unicamente por software (por ejemplo, el dispatcher de un RTOS que se ejecuta en modo privilegiado, inicia un TASK en modo no privilegiado). En cambio, el cambio opuesto se realiza unicamente por excepciones (por ejemplo, un task quizo acceder a una memoria no permitida por el MPU). 
 
 ### 7. ¿Qué se entiende por modelo de registros ortogonal? Dé un ejemplo
+
 
 ### 8. ¿Qué ventajas presenta el uso de intrucciones de ejecución condicional (IT)? Dé un ejemplo
 
 ### 9. Describa brevemente las excepciones más prioritarias (reset, NMI, Hardfault).
 
 ### 10. Describa las funciones principales de la pila. ¿Cómo resuelve la arquitectura el llamado a funciones y su retorno?
+La funcion del stack es guardar el contexto de una funcion. Es decir, si el procesador esta ejecutando una funcion y luego tiene un llamado a una funcion anidada, todas las variables en uso (que normalmente estaran en los registros del procesador), se guardan en la pila mediante PUSH para liberar los registros y recien ahi se puede llamar a la otra funcion que a su vez tendrá sus propias variables (que se guardaran en los registros del procesador para su uso). Cuando se retorna de esta subfuncion, se traen las variables en uso por la funcion a la que se retorna haciendo POP de la pila. 
 
 ### 11. Describa la secuencia de reset del microprocesador.
 
@@ -42,6 +46,7 @@ El mapa de memoria es un continuo de direcciones donde todos los perifericos del
 ### 13. ¿Cómo se implementan las prioridades de las interrupciones? Dé un ejemplo
 
 ### 14. ¿Qué es el CMSIS? ¿Qué función cumple? ¿Quién lo provee? ¿Qué ventajas aporta?
+El CMSIS es un paquete de software en C provisto por ARM que nos permiten hacer uso de todas las funcionalidad estandar que tiene un Cortex. La ventaja de programar usando el CMSIS es que es muy facil portar el software de un procesador a otro, siempre y cuando ambos sean Cortex. 
 
 ### 15. Cuando ocurre una interrupción, asumiendo que está habilitada ¿Cómo opera el microprocesador para atender a la subrutina correspondiente? Explique con un ejemplo
 
