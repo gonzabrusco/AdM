@@ -21,20 +21,34 @@ El set de instrucciones Thumb permite una mayor densidad de código porque es un
 Una arquitectura Load-Store se destaca porque las unicas instrucciones que acceden a la memoria son las de carga y almacenamiento (load y store). Estas instrucciones trabajan desde los registros hacia la memoria y viceversa. En cambio, el resto de las intrucciones de la ISA trabajan únicamente con los registros (no tienen acceso a la memoria). Entonces podemos decir, que este tipo de arquitecturas no tienen instrucciones que traigan datos de memoria y hagan operaciones con esos valores (o hagan operaciones y guarden en memoria). 
 
 ### 4. ¿Cómo es el mapa de memoria de la familia?
+El mapa de memoria es un continuo de direcciones donde todos los perifericos del microcontrolador estan mapeados. Como máximo puede direccionar 4G direcciones. 
 
 ### 5. ¿Qué ventajas presenta el uso de los “shadowed pointers” del PSP y el MSP?
+
 ### 6. Describa los diferentes modos de privilegio y operación del Cortex M, sus relaciones y como se conmuta de uno al otro. Describa un ejemplo en el que se pasa del modo privilegiado a no priviligiado y nuevamente a privilegiado.
+
 ### 7. ¿Qué se entiende por modelo de registros ortogonal? Dé un ejemplo
+
 ### 8. ¿Qué ventajas presenta el uso de intrucciones de ejecución condicional (IT)? Dé un ejemplo
+
 ### 9. Describa brevemente las excepciones más prioritarias (reset, NMI, Hardfault).
+
 ### 10. Describa las funciones principales de la pila. ¿Cómo resuelve la arquitectura el llamado a funciones y su retorno?
+
 ### 11. Describa la secuencia de reset del microprocesador.
+
 ### 12. ¿Qué entiende por “core peripherals”? ¿Qué diferencia existe entre estos y el resto de los periféricos?
+
 ### 13. ¿Cómo se implementan las prioridades de las interrupciones? Dé un ejemplo
+
 ### 14. ¿Qué es el CMSIS? ¿Qué función cumple? ¿Quién lo provee? ¿Qué ventajas aporta?
+
 ### 15. Cuando ocurre una interrupción, asumiendo que está habilitada ¿Cómo opera el microprocesador para atender a la subrutina correspondiente? Explique con un ejemplo
+
 ### 16. ¿Cómo cambia la operación de stacking al utilizar la unidad de punto flotante?
+
 ### 17. Explique las características avanzadas de atención a interrupciones: tail chaining y late arrival.
+
 ### 18. ¿Qué es el systick? ¿Por qué puede afirmarse que su implementación favorece la portabilidad de los sistemas operativos embebidos?
 El Systick es el periferico que lleva la base de tiempo para los sistemas operativos. La ventaja de que este implementado como parte de la IP de ARM hace que los sistemas operativos que hacen uso del mismo sean facilmente portables entre procesadores Cortex (ej. FreeRTOS).
 ### 19. ¿Qué funciones cumple la unidad de protección de memoria (MPU)?
