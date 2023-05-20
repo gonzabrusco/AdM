@@ -389,6 +389,34 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/* Ejercicio 1: Realizar una función que inicialice un vector con ceros. La función debe tener el siguiente
+prototipo. */
+void zeros(uint32_t * vector, uint32_t longitud) {
+	memset(vector, longitud, longitud * sizeof(uint32_t));
+}
+
+/* Ejercicio 2: Realizar una función que realice el producto de un vector y un escalar (por ejemplo, podría servir
+para cambiar el nivel de amplitud de una señal). */
+void productoEscalar32(uint32_t * vectorIn, uint32_t * vectorOut, uint32_t longitud, uint32_t escalar) {
+	for(uint32_t i = 0; i < longitud; i++) {
+		vectorOut[i] = vectorIn[i] * escalar;
+	}
+}
+/* Ejercicio 3: Adapte la función del ejercicio 2 para realizar operaciones sobre vectores de 16 bits. */
+void productoEscalar16(uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar) {
+	for(uint32_t i = 0; i < longitud; i++) {
+		vectorOut[i] = vectorIn[i] * escalar;
+	}
+}
+/* Ejercicio 4: Adapte la función del ejercicio 3 para saturar el resultado del producto a 12 bits. */
+void productoEscalar12(uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar) {
+	for(uint32_t i = 0; i < longitud; i++) {
+		vectorOut[i] = vectorIn[i] * escalar;
+		if(vectorOut[i] > 0x0FFF) {
+			vectorOut[i] = 0x0FFF;
+		}
+	}
+}
 
 /* USER CODE END 4 */
 
