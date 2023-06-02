@@ -5,6 +5,7 @@
 @ Simbolos exportados
 .global asm_svc
 .global asm_sum
+.global asm_zeros
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -43,3 +44,22 @@
         @ bx lr
         @ push {lr} ... pop {pc}
 
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_zeros(uint32_t * vector, uint32_t longitud)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector
+@   r1: longitud del vector
+@
+.thumb_func
+    asm_zeros:
+    	mov r2, 0	// Ponemos un cero en el registro 2
+    _loop:
+    	cbz r1,_return
+    	sub r1,1
+		str r2,[r0, r1, LSL 2] // Guardamos el cero del registro 2 en la posicion apuntada por el registro 0
+		b _loop
+	_return:
+		bx lr
