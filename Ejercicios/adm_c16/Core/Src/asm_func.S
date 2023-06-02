@@ -6,6 +6,9 @@
 .global asm_svc
 .global asm_sum
 .global asm_zeros
+.global asm_productoEscalar32
+.global asm_productoEscalar16
+.global asm_productoEscalar12
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -56,10 +59,77 @@
 .thumb_func
     asm_zeros:
     	mov r2, 0	// Ponemos un cero en el registro 2
-    _loop:
-    	cbz r1,_return
-    	sub r1,1
-		str r2,[r0, r1, LSL 2] // Guardamos el cero del registro 2 en la posicion apuntada por el registro 0
-		b _loop
-	_return:
+    asm_zeros_loop:
+    	cbz r1, asm_zeros_return
+    	sub r1, 1
+		str r2, [r0, r1, LSL 2] // Guardamos el cero del registro 2 en la posicion apuntada por el registro 0 (x 4)
+		b asm_zeros_loop
+	asm_zeros_return:
+		bx lr
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_productoEscalar32(uint32_t * vectorIn, uint32_t * vectorOut, uint32_t longitud, uint32_t escalar)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: direccion del vector de salida
+@   r2: longitud del vector
+@	r3: numero a multiplicar
+@
+.thumb_func
+    asm_productoEscalar32:
+    	cbz r2, asm_productoEscalar32_return
+    	sub r2, 1
+    	ldr r4, [r0, r2, LSL 2] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 2)))
+    	mul r4, r4,r3 // r4 = r4 * r3
+		str r4, [r1, r2, LSL 2] // Guardamos el valor multiplicado *(r1 + (r2 << 2)) = r4
+		b asm_productoEscalar32
+	asm_productoEscalar32_return:
+		bx lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_productoEscalar16(uint32_t * vectorIn, uint32_t * vectorOut, uint32_t longitud, uint32_t escalar)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: direccion del vector de salida
+@   r2: longitud del vector
+@	r3: numero a multiplicar
+@
+.thumb_func
+    asm_productoEscalar16:
+    	cbz r2, asm_productoEscalar16_return
+    	sub r2, 1
+    	ldrh r4, [r0, r2, LSL 1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
+    	mul r4, r4, r3 // r4 = r4 * r3
+		strh r4, [r1, r2, LSL 1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
+		b asm_productoEscalar16
+	asm_productoEscalar16_return:
+		bx lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_productoEscalar12(uint32_t * vectorIn, uint32_t * vectorOut, uint32_t longitud, uint32_t escalar)
+@
+@	NOTA: Esta funcion usa aritmetica saturada
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: direccion del vector de salida
+@   r2: longitud del vector
+@	r3: numero a multiplicar
+@
+.thumb_func
+    asm_productoEscalar12:
+    	cbz r2, asm_productoEscalar12_return
+    	sub r2, 1
+    	ldrh r4, [r0, r2, LSL 1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
+    	mul r4, r4, r3 // r4 = r4 * r3
+    	usat r4, 12, r4 // Saturo el registro r4 a 12 bits y lo guardo en el registro r4
+		strh r4, [r1, r2, LSL 1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
+		b asm_productoEscalar12
+	asm_productoEscalar12_return:
 		bx lr

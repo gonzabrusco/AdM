@@ -159,9 +159,21 @@ int main(void)
 
   const uint32_t Resultado = asm_sum (5, 3);
 
-  uint32_t array[11] = {1,2,3,4,5,6,7,8,9,10};
+  uint32_t array32[11] = {1,2,3,4,5,6,7,8,9,10,11};
+  uint32_t array32_2[11] = {1,2,3,4,5,6,7,8,9,10,11};
 
-  asm_zeros(array, 11);
+  asm_zeros(array32, 11);
+  asm_productoEscalar32(array32_2, array32, 11, 100);
+
+  uint16_t array16[11] = {0};
+  uint16_t array16_2[11] = {1,2,3,4,5,6,7,8,9,10,11};
+  asm_productoEscalar16(array16_2, array16, 11, 1000);
+
+  uint16_t array12[11] = {0};
+  uint16_t array12_2[11] = {1,2,3,4,5,6,7,8,9,10,11};
+  asm_productoEscalar12(array12_2, array12, 11, 1000);
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
