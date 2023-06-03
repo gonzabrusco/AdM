@@ -58,13 +58,12 @@
 @
 .thumb_func
     asm_zeros:
-    	mov r2, 0	// Ponemos un cero en el registro 2
+    	mov r2, #0	// Ponemos un cero en el registro 2
     asm_zeros_loop:
-    	cbz r1, asm_zeros_return
-    	sub r1, 1
-		str r2, [r0, r1, LSL 2] // Guardamos el cero del registro 2 en la posicion apuntada por el registro 0 (x 4)
-		b asm_zeros_loop
-	asm_zeros_return:
+    	sub r1, #1 // Descremento la longitud
+		str r2, [r0, r1, LSL #2] // Guardamos el cero del registro 2 en la posicion apuntada por el registro 0 (x 4)
+		cmp r1, #0 // Comparo con cero la longitud
+		bne asm_zeros_loop
 		bx lr
 
 
@@ -80,13 +79,12 @@
 @
 .thumb_func
     asm_productoEscalar32:
-    	cbz r2, asm_productoEscalar32_return
-    	sub r2, 1
-    	ldr r4, [r0, r2, LSL 2] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 2)))
-    	mul r4, r4,r3 // r4 = r4 * r3
-		str r4, [r1, r2, LSL 2] // Guardamos el valor multiplicado *(r1 + (r2 << 2)) = r4
-		b asm_productoEscalar32
-	asm_productoEscalar32_return:
+    	sub r2, #1
+    	ldr r4, [r0, r2, LSL #2] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 2)))
+    	mul r4, r4, r3 // r4 = r4 * r3
+		str r4, [r1, r2, LSL #2] // Guardamos el valor multiplicado *(r1 + (r2 << 2)) = r4
+		cmp r2, #0 // Comparo con cero la longitud
+		bne asm_productoEscalar32
 		bx lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -101,13 +99,12 @@
 @
 .thumb_func
     asm_productoEscalar16:
-    	cbz r2, asm_productoEscalar16_return
-    	sub r2, 1
-    	ldrh r4, [r0, r2, LSL 1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
+    	sub r2, #1
+    	ldrh r4, [r0, r2, LSL #1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
     	mul r4, r4, r3 // r4 = r4 * r3
-		strh r4, [r1, r2, LSL 1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
-		b asm_productoEscalar16
-	asm_productoEscalar16_return:
+		strh r4, [r1, r2, LSL #1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
+		cmp r2, #0 // Comparo con cero la longitud
+		bne asm_productoEscalar16
 		bx lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -124,12 +121,11 @@
 @
 .thumb_func
     asm_productoEscalar12:
-    	cbz r2, asm_productoEscalar12_return
-    	sub r2, 1
+    	sub r2, #1
     	ldrh r4, [r0, r2, LSL 1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
     	mul r4, r4, r3 // r4 = r4 * r3
-    	usat r4, 12, r4 // Saturo el registro r4 a 12 bits y lo guardo en el registro r4
+    	usat r4, #12, r4 // Saturo el registro r4 a 12 bits y lo guardo en el registro r4
 		strh r4, [r1, r2, LSL 1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
-		b asm_productoEscalar12
-	asm_productoEscalar12_return:
+		cmp r2, #0 // Comparo con cero la longitud
+		bne asm_productoEscalar12
 		bx lr
