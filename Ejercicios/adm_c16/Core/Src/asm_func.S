@@ -9,6 +9,9 @@
 .global asm_productoEscalar32
 .global asm_productoEscalar16
 .global asm_productoEscalar12
+.global asm_filtroVentana10
+.global asm_pack32to16
+.global asm_max
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -58,12 +61,14 @@
 @
 .thumb_func
     asm_zeros:
+    	cbz r0, asm_zeros_exit // Chequeo r0 distinto de 0
+    	cbz r1, asm_zeros_exit // Chequeo r1 distinto de 0
     	mov r2, #0	// Ponemos un cero en el registro 2
     asm_zeros_loop:
-    	sub r1, #1 // Descremento la longitud
+    	subs r1, #1 // Descremento la longitud (y modifica bit ZERO)
 		str r2, [r0, r1, LSL #2] // Guardamos el cero del registro 2 en la posicion apuntada por el registro 0 (x 4)
-		cmp r1, #0 // Comparo con cero la longitud
-		bne asm_zeros_loop
+		bne asm_zeros_loop // El flag Z queda seteado de la operacion subs
+	asm_zeros_exit:
 		bx lr
 
 
@@ -79,12 +84,14 @@
 @
 .thumb_func
     asm_productoEscalar32:
-    	sub r2, #1
+    	push {r4}
+    asm_productoEscalar32_loop:
+    	subs r2, #1
     	ldr r4, [r0, r2, LSL #2] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 2)))
     	mul r4, r4, r3 // r4 = r4 * r3
 		str r4, [r1, r2, LSL #2] // Guardamos el valor multiplicado *(r1 + (r2 << 2)) = r4
-		cmp r2, #0 // Comparo con cero la longitud
-		bne asm_productoEscalar32
+		bne asm_productoEscalar32_loop // El flag Z queda seteado de la operacion subs
+		pop {r4}
 		bx lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -99,12 +106,14 @@
 @
 .thumb_func
     asm_productoEscalar16:
-    	sub r2, #1
+		push {r4}
+    asm_productoEscalar16_loop:
+    	subs r2, #1
     	ldrh r4, [r0, r2, LSL #1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
     	mul r4, r4, r3 // r4 = r4 * r3
 		strh r4, [r1, r2, LSL #1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
-		cmp r2, #0 // Comparo con cero la longitud
-		bne asm_productoEscalar16
+		bne asm_productoEscalar16_loop // El flag Z queda seteado de la operacion subs
+		pop {r4}
 		bx lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -121,11 +130,78 @@
 @
 .thumb_func
     asm_productoEscalar12:
-    	sub r2, #1
-    	ldrh r4, [r0, r2, LSL 1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
+    	push {r4}
+    asm_productoEscalar12_loop:
+    	subs r2, #1
+    	ldrh r4, [r0, r2, LSL #1] // Cargo el valor a multiplicar (r4 = *(r0 + (r2 << 1)))
     	mul r4, r4, r3 // r4 = r4 * r3
     	usat r4, #12, r4 // Saturo el registro r4 a 12 bits y lo guardo en el registro r4
-		strh r4, [r1, r2, LSL 1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
-		cmp r2, #0 // Comparo con cero la longitud
-		bne asm_productoEscalar12
+		strh r4, [r1, r2, LSL #1] // Guardamos el valor multiplicado *(r1 + (r2 << 1)) = r4
+		bne asm_productoEscalar12 // El flag Z queda seteado de la operacion subs
+		pop {r4}
 		bx lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_filtroVentana10(uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitudVectorIn)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: direccion del vector de salida
+@   r2: longitud del vector
+@	r3: numero a multiplicar
+@
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_pack32to16(int32_t * vectorIn, int16_t *vectorOut, uint32_t longitud)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: direccion del vector de salida
+@   r2: longitud del vector
+@
+.thumb_func
+	asm_pack32to16:
+    	subs r2, #1
+    	ldr r3, [r0, r2, LSL #2] // Cargo el valor recortar r3 = *(r0 + (r2 << 2))
+    	lsr r3, r3, #16 // 16 bit shift a la derecha
+		strh r3, [r1, r2, LSL #1] // Guardamos el valor recortado *(r1 + (r2 << 1)) = r3
+		bne asm_pack32to16 // El flag Z queda seteado de la operacion subs
+		bx lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   int32_t asm_max(int32_t * vectorIn, uint32_t longitud)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: longitud del vector
+@
+@ Retorna: la posicion del valor maximo encontrado.
+@
+@ Registros usados temporalmente:
+@ 	r2: almacena el valor provisoriamente leido de memoria
+@	r3: almacena el valor maximo registrado
+@	r4: almacena la posicion del valor maximo registrado
+.thumb_func
+	asm_max:
+		push {r4}
+		subs r1, #1 // Decremento la longitud
+		ldr r3, [r0, r1, LSL #2] // Cargo el valor comparar r3 = *(r0 + (r1 << 2))
+		mov r4, r1
+		beq asm_max_exit // El flag Z queda seteado de la operacion subs
+	asm_max_loop:
+		sub r1, #1 // Decremento la longitud
+		ldr r2, [r0, r1, LSL #2] // Cargo el valor comparar r2 = *(r0 + (r1 << 2))
+		cmp r3,r2
+		itt lt
+		movlt r3,r2
+		movlt r4,r1
+		cmp r1,#0
+		bne asm_max_loop
+	asm_max_exit:
+		mov r0, r4
+		pop {r4}
+		bx lr
+

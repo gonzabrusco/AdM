@@ -173,6 +173,16 @@ int main(void)
   uint16_t array12_2[11] = {1,2,3,4,5,6,7,8,9,10,11};
   asm_productoEscalar12(array12_2, array12, 11, 1000);
 
+  uint16_t arrayVentanaOut[15] = {0};
+  uint16_t arrayVentanaIn[15] = {8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
+  filtroVentana10(arrayVentanaIn, arrayVentanaOut, sizeof(arrayVentanaIn)/sizeof(arrayVentanaIn[0]));
+
+  int16_t arrayPack32to16Out[12] = {0};
+  int32_t arrayPack32to16In[12] = {-65541,-65540,-65539,-65538,-65537,-65536,65534,65535,65536,65537,65538,65539};
+  asm_pack32to16(arrayPack32to16In, arrayPack32to16Out, sizeof(arrayPack32to16In)/sizeof(arrayPack32to16In[0]));
+
+  int32_t arrayMaxIn[12] = {-10,-2,10,-5,11,2,128,-1256,129,0,2,3};
+  uint32_t maxPos = asm_max(arrayMaxIn, sizeof(arrayMaxIn)/sizeof(arrayMaxIn[0]));
 
   /* USER CODE END 2 */
 
@@ -435,6 +445,45 @@ void productoEscalar12(uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longi
 		}
 	}
 }
+/* Ejercicio 5: Realice una función que implemente un filtro de ventana móvil de 10 valores sobre un vector de muestras. */
+void filtroVentana10(uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitudVectorIn) {
+	uint32_t vectorIterator;
+	uint32_t windowsBeginPos;
+	uint32_t windowsEndPos;
+	uint16_t average;
+
+	vectorIterator = longitudVectorIn;
+	while(vectorIterator-- > 0) {
+		average = 0;
+		windowsEndPos = vectorIterator+6 < longitudVectorIn ? vectorIterator+6 : longitudVectorIn;
+		windowsBeginPos = vectorIterator > 4 ? vectorIterator-5 : 0;
+		while(windowsEndPos-- > windowsBeginPos) {
+			average += vectorIn[windowsEndPos];
+		}
+		vectorOut[vectorIterator] = average / 11;
+	}
+}
+/* Ejercicio 6: Realizar una función que reciba un vector de números signados de 32 bits y los “empaquete” en otro vector de 16 bits. La función deberá adecuar los valores de entrada a la nueva precisión. */
+void pack32to16(int32_t * vectorIn, int16_t *vectorOut, uint32_t longitud) {
+	while(longitud-- > 0) {
+		vectorOut[longitud] = vectorIn[longitud] >> 16;
+	}
+}
+/* Ejercicio 7: Realizar una función que reciba un vector de números signados de 32 bits y devuelva la posición del máximo del vector. */
+int32_t max(int32_t * vectorIn, uint32_t longitud) {
+	int32_t max, pos;
+	longitud--;
+	max = vectorIn[longitud];
+	pos = longitud;
+	while(longitud-- > 0) {
+		if(vectorIn[longitud] > max) {
+			max = vectorIn[longitud];
+			pos = longitud;
+		}
+	}
+	return pos;
+}
+
 
 /* USER CODE END 4 */
 
