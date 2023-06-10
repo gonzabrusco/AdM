@@ -31,7 +31,7 @@ El modo privilegiado de ejecución tiene acceso a todos los recursos del sistema
 Un ejemplo de esto es cuando un sistema operativo ejecuta un task. Mientras el scheduler esta activo, se ejecuta en modo privilegiado pero antes de pasarle el control a un task, cambia a modo no privilegiado para restringir el acceso al sistema por parte del task. Cuando el Task finaliza su ejecución, se puede generar una excepción para que entre el modo Handler y luego se llame al Scheduler nuevamente pero de forma privilegiada. Esto es útil cuando se usa en conjunto con el MPU para restringir el acceso a memoria por parte de los Tasks. 
 
 ### 7. ¿Qué se entiende por modelo de registros ortogonal? Dé un ejemplo
-Los registros ortogonales son aquellos que modificando el valor de uno, no se afecta el comportamiento que controla el otro registro. Es decir, son totalmente independientes. 
+Significa que cualquier instruccion de assembly puede operar con cualquier registro. En arquitecturas antiguas muchas veces una operacion siempre ponia el resultado en un registro determinado. En la arquitectura de ARM cualquier operacion puede trabajar con cualquier registro de origen y destino.
 
 ### 8. ¿Qué ventajas presenta el uso de intrucciones de ejecución condicional (IT)? Dé un ejemplo
 
