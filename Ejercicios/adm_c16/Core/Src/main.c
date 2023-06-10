@@ -175,7 +175,7 @@ int main(void)
 
   uint16_t arrayVentanaOut[15] = {0};
   uint16_t arrayVentanaIn[15] = {8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
-  filtroVentana10(arrayVentanaIn, arrayVentanaOut, sizeof(arrayVentanaIn)/sizeof(arrayVentanaIn[0]));
+  asm_filtroVentana10(arrayVentanaIn, arrayVentanaOut, sizeof(arrayVentanaIn)/sizeof(arrayVentanaIn[0]));
 
   int16_t arrayPack32to16Out[12] = {0};
   int32_t arrayPack32to16In[12] = {-65541,-65540,-65539,-65538,-65537,-65536,65534,65535,65536,65537,65538,65539};

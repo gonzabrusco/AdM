@@ -149,8 +149,69 @@
 @   r0: direccion del vector de entrada
 @   r1: direccion del vector de salida
 @   r2: longitud del vector
-@	r3: numero a multiplicar
 @
+@ Registros usados temporalmente:
+@	r3: iterador del vector
+@	r4: posicion de inicio de ventana
+@	r5: posicion de finalizacion de ventana
+@	r6: promedio
+@	r7: registro auxiliar donde se almacena el valor leido de memoria
+@	r8: el tamaño del a ventana (11)
+.thumb_func
+	asm_filtroVentana10:
+		push {r4-r8}
+		mov r3, r2
+		mov r8,#11
+	asm_filtroVentana10_loop1:
+		sub r3, #1 // Decremento el indice
+		mov r6, #0 // Reseteo promedio
+
+		// Inicializo ventana inicio
+		mov r4, #0 // Inicializo por defecto en cero
+		cmp r3, #4 // Comparo el iterador con 4
+		it hi
+		subhi r4, r3, #5 // Si era mayor que cuatro, entonces puedo restar 5 posiciones. De lo contrario, queda en cero.
+
+		// Inicializo ventana fin
+		add r5, r3, #6 // Sumo en 6 al iterador actual y me fijo si se paso del tamaño del vector.
+		cmp r5, r2
+		it hs // unsigned higher or same
+		movhs r5, r2 // Si se paso, limito la ventana al final del vector'
+
+		// En este punto tengo definido el inicio y el fin de la ventana.
+		// Itero por las muestras contenidas en ella.
+	asm_filtroVentana10_loop2:
+		sub r5, #1 // Decremento el fin de la ventana
+		ldrh r7, [r0, r5, LSL #1] // Cargo el valor a procesar
+		add r6, r6, r7
+		cmp r5, r4 // Me fijo si se completo el recorrido de la ventana
+		bne asm_filtroVentana10_loop2
+
+		// Termine de sumar todas las muestras. Hago la division por la cantidad de muestras en una ventana y guardo el valor en memoria.
+		udiv r6, r6, r8
+		strh r6, [r1, r3, LSL #1] // Guardo el promedio calculado
+
+		cmp r3, #0 // Me fijo si ya procesamos todas las muestas del vector.
+		bne asm_filtroVentana10_loop1
+	asm_filtroVentana10_exit:
+		pop {r4-r8}
+		bx lr
+
+@	uint32_t vectorIterator;
+@	uint32_t windowsBeginPos;
+@	uint32_t windowsEndPos;
+@	uint16_t average;
+@
+@	vectorIterator = longitudVectorIn;
+@	while(vectorIterator-- > 0) {
+@		average = 0;
+@		windowsEndPos = vectorIterator+6 < longitudVectorIn ? vectorIterator+6 : longitudVectorIn;
+@@		windowsBeginPos = vectorIterator > 4 ? vectorIterator-5 : 0;
+@		while(windowsEndPos-- > windowsBeginPos) {
+@			average += vectorIn[windowsEndPos];
+@		}
+@		vectorOut[vectorIterator] = average / 11;
+@	}
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
@@ -161,6 +222,8 @@
 @   r1: direccion del vector de salida
 @   r2: longitud del vector
 @
+@ Registros usados temporalmente:
+@	r3: almacena el valor a recortar
 .thumb_func
 	asm_pack32to16:
     	subs r2, #1
