@@ -31,9 +31,10 @@ El modo privilegiado de ejecución tiene acceso a todos los recursos del sistema
 Un ejemplo de esto es cuando un sistema operativo ejecuta un task. Mientras el scheduler esta activo, se ejecuta en modo privilegiado pero antes de pasarle el control a un task, cambia a modo no privilegiado para restringir el acceso al sistema por parte del task. Cuando el Task finaliza su ejecución, se puede generar una excepción para que entre el modo Handler y luego se llame al Scheduler nuevamente pero de forma privilegiada. Esto es útil cuando se usa en conjunto con el MPU para restringir el acceso a memoria por parte de los Tasks. 
 
 ### 7. ¿Qué se entiende por modelo de registros ortogonal? Dé un ejemplo
-Los registros ortogonales son aquellos que modificando el valor de uno, no se afecta el comportamiento que controla el otro registro. Es decir, son totalmente independientes. 
+Significa que cualquier instruccion de assembly puede operar con cualquier registro. En arquitecturas antiguas muchas veces una operacion siempre ponia el resultado en un registro determinado. En la arquitectura de ARM cualquier operacion puede trabajar con cualquier registro de origen y destino.
 
 ### 8. ¿Qué ventajas presenta el uso de intrucciones de ejecución condicional (IT)? Dé un ejemplo
+Esto permite generar bloques del tipo IF THEN, IF THEN THEN, IF THEN ELSE, etc. Es decir, estos bloques nos permiten ejecutar condicionalmente hasta 4 instrucciones de assembly. Si por ejemplo luego de una comparacion quisieramos modificar dos registros, podriamos ejecutar una instruccion de cmp y luego en un bloque ITT, podríamos ejecutar instrucciones que sean condicionales sobre esos dos registros (movne, addeq, subgt, etc).
 
 ### 9. Describa brevemente las excepciones más prioritarias (reset, NMI, Hardfault).
 La excepción de reset es la que se produce cuando hay un reset del procesador. Es la mas prioritaria de todas. 
@@ -78,10 +79,14 @@ En general se utiliza para que el programa pueda retornar a modo privilegiado. E
 
 ## ISA
 ### 1. ¿Qué son los sufijos y para qué se los utiliza? Dé un ejemplo
+Lo sufijos sirven para modificar el comportamiento de la instruccion. Por ejemplo, pueden hacer que una instruccion se ejecute o no de forma condicional (sufijos ne, eq, etc). O tambien pueden especificar si deben modificar los flags Z, N, V, C; o no.
 
 ### 2. ¿Para qué se utiliza el sufijo ‘s’? Dé un ejemplo
+El sufijo S sirve para especificar si una instruccion debe modificar los flags N,Z,V,C o no. Por ejemplo, una instruccion del tipo "sub" no modificaría ninguno de estos registros, pero si le agregamos el sufijo "s" transformandola en "subs" cuando se ejecute la instrucción modificará los flags en base al resultado.
 
 ### 3. ¿Qué utilidad tiene la implementación de instrucciones de aritmética saturada? Dé un ejemplo con operaciones con datos de 8 bits.
+Las instrucciones de aritmética saturada son de mucha utilidad en procesamiento de señales por ejemplo. Si nosotros estuvieramos procesando una señal que excede el rango de representación de la arquitectura con la que estamos trabajando (8 bits o 32 bits), al ocurrir on overflow, aparecería una discontinuidad en la señal porque los valores pasarían de estar en el rango alto de la representación, al rango bajo. 
+Por ejemplo, si la arquitectura fuera de 8 bits, un numero signado iría de -128 to 127. Si estuvieramos aplicando a amplificación x2 a una senoidal que tenía un valor pico pico de 140, nos quedaría una señal pico pico de 280. Pero ya sabemos que el rango de representacion de 8 bits es de 255 en total. Por ende, cuando se produzca el overflow para valores superiores a 127, esos valores se trasladaran a -128, -127, -125, etc. Es decir, lo que eran los valores mas altos de la senoidal ahora aparecerían como valores muy negativos. Lo mismo pasaría en la otra mitad del periodo pero al reves (los numeros que sean mas negativos que -128, aparecerán como 127, 126, 125, etc).
 
 ### 4. Describa brevemente la interfaz entre assembler y C ¿Cómo se reciben los argumentos de las funciones? ¿Cómo se devuelve el resultado? ¿Qué registros deben guardarse en la pila antes de ser modificados?
 Los argumentos se reciben en los registros 0 en adelante, dependiendo de la cantidad de parametros pasados. En cambio el valor de retorno siempre se devuelve por r0. Todos los registros deben ser guardados en el stack antes de llamar a una funcion. 
