@@ -184,6 +184,27 @@ int main(void)
   int32_t arrayMaxIn[12] = {-10,-2,10,-5,11,2,128,-1256,129,0,2,3};
   uint32_t maxPos = asm_max(arrayMaxIn, sizeof(arrayMaxIn)/sizeof(arrayMaxIn[0]));
 
+  int32_t arraydownsampleMOut[12] = {0};
+  int32_t arraydownsampleMIn[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
+  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 2);
+  memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
+  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 3);
+  memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
+  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 4);
+  memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
+  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 5);
+  memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
+  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 6);
+  memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
+  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 7);
+  memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
+  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 13);
+
+  uint16_t arrayinvertir1[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
+  uint16_t arrayinvertir2[13] = {0,1,2,3,4,5,6,7,8,9,10,11,12};
+  invertir(arrayinvertir1, 12);
+  invertir(arrayinvertir2, 13);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -482,6 +503,31 @@ int32_t max(int32_t * vectorIn, uint32_t longitud) {
 		}
 	}
 	return pos;
+}
+
+/* Ejercicio 8: Realizar una función que reciba un vector de muestras signadas de 32 bits y lo decime descartando una cada N muestras. */
+void downsampleM(int32_t * vectorIn, int32_t * vectorOut, uint32_t longitud, uint32_t N) {
+	uint32_t i = 0,j = 0;
+
+	while(i < longitud) {
+		if((i+1)%N == 0) {
+			vectorOut[j++] = vectorIn[i];
+		}
+		i++;
+	}
+}
+
+/* Ejercicio 9: Realizar una función que reciba un vector de muestras no signadas de 16 bits e invierta su orden. */
+void invertir(uint16_t * vector, uint32_t longitud) {
+	uint16_t swap;
+	uint32_t endIndex = longitud / 2;
+	uint32_t i = 0;
+
+	while(longitud-- > endIndex) {
+		swap = vector[longitud];
+		vector[longitud] = vector[i];
+		vector[i++] = swap;
+	}
 }
 
 
