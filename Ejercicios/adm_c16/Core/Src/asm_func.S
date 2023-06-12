@@ -12,6 +12,8 @@
 .global asm_filtroVentana10
 .global asm_pack32to16
 .global asm_max
+.global asm_downsampleM
+.global asm_invertir
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -197,22 +199,6 @@
 		pop {r4-r8}
 		bx lr
 
-@	uint32_t vectorIterator;
-@	uint32_t windowsBeginPos;
-@	uint32_t windowsEndPos;
-@	uint16_t average;
-@
-@	vectorIterator = longitudVectorIn;
-@	while(vectorIterator-- > 0) {
-@		average = 0;
-@		windowsEndPos = vectorIterator+6 < longitudVectorIn ? vectorIterator+6 : longitudVectorIn;
-@@		windowsBeginPos = vectorIterator > 4 ? vectorIterator-5 : 0;
-@		while(windowsEndPos-- > windowsBeginPos) {
-@			average += vectorIn[windowsEndPos];
-@		}
-@		vectorOut[vectorIterator] = average / 11;
-@	}
-
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
 @   void asm_pack32to16(int32_t * vectorIn, int16_t *vectorOut, uint32_t longitud)
@@ -268,3 +254,55 @@
 		pop {r4}
 		bx lr
 
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_downsampleM(int32_t * vectorIn, int32_t * vectorOut, uint32_t longitud, uint32_t N)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: direccion del vector de salida
+@   r2: longitud del vector
+@   r3: factor de diezmado
+@
+@
+@ Registros usados temporalmente:
+@ 	r4: iterador vector de entrada
+@ 	r5: iterador vector de salida
+@	r6: contador de muestras
+@	r7: muestra temporal
+.thumb_func
+	asm_downsampleM:
+		push {r4-r7}
+		mov r4, #0 // Inicializo iterador vector de entrada
+		mov r5, #0 // Inicializo iterador vector de salida
+		mov r6, #0 // Inicializo contador de muestras
+		sub r3, r3, #1 // Factor de diezmado - 1
+	asm_downsampleM_loop:
+		cmp r6, r3
+		itttt eq
+		ldreq r7, [r0, r4, LSL #2] // Cargo el valor comparar r7 = *(r0 + (r4 << 2))
+		streq r7, [r1, r5, LSL #2] // Guardamos el valor recortado *(r1 + (r5 << 2)) = r7
+		addeq r5, #1 // Incremento iterador vector de salida
+		moveq r6, #0 // Reseteo contador de muestras
+		it ne
+		addne r6, r6, #1 // Incremento contador de muestras
+		add r4, #1 // Incremento iterador vector de entrada
+		cmp r4, r2 // Me fijo si llegamos al final del vector
+		bne asm_downsampleM_loop
+		pop {r4-r7}
+		bx lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_invertir(uint16_t * vector, uint32_t longitud)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: longitud del vector
+@
+@ Registros usados temporalmente:
+@ 	r2: almacena el valor provisoriamente leido de memoria
+@	r3: almacena el valor maximo registrado
+@	r4: almacena la posicion del valor maximo registrado
+.thumb_func
+	asm_invertir:

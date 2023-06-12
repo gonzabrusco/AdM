@@ -186,19 +186,19 @@ int main(void)
 
   int32_t arraydownsampleMOut[12] = {0};
   int32_t arraydownsampleMIn[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
-  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 2);
+  asm_downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 2);
   memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
-  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 3);
+  asm_downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 3);
   memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
-  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 4);
+  asm_downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 4);
   memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
-  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 5);
+  asm_downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 5);
   memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
-  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 6);
+  asm_downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 6);
   memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
-  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 7);
+  asm_downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 7);
   memset(arraydownsampleMOut, 0, sizeof(arraydownsampleMOut));
-  downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 13);
+  asm_downsampleM(arraydownsampleMIn, arraydownsampleMOut, 12, 13);
 
   uint16_t arrayinvertir1[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
   uint16_t arrayinvertir2[13] = {0,1,2,3,4,5,6,7,8,9,10,11,12};
@@ -510,7 +510,7 @@ void downsampleM(int32_t * vectorIn, int32_t * vectorOut, uint32_t longitud, uin
 	uint32_t i = 0,j = 0;
 
 	while(i < longitud) {
-		if((i+1)%N == 0) {
+		if(i%N == N-1) { // En la funcion de assembly se utilizo otra estrategia para no usar el operador modulo.
 			vectorOut[j++] = vectorIn[i];
 		}
 		i++;
