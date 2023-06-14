@@ -202,8 +202,8 @@ int main(void)
 
   uint16_t arrayinvertir1[12] = {0,1,2,3,4,5,6,7,8,9,10,11};
   uint16_t arrayinvertir2[13] = {0,1,2,3,4,5,6,7,8,9,10,11,12};
-  invertir(arrayinvertir1, 12);
-  invertir(arrayinvertir2, 13);
+  asm_invertir(arrayinvertir1, 12);
+  asm_invertir(arrayinvertir2, 13);
 
   /* USER CODE END 2 */
 

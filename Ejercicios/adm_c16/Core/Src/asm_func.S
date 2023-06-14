@@ -301,8 +301,23 @@
 @   r1: longitud del vector
 @
 @ Registros usados temporalmente:
-@ 	r2: almacena el valor provisoriamente leido de memoria
-@	r3: almacena el valor maximo registrado
-@	r4: almacena la posicion del valor maximo registrado
+@ 	r2: almacena el valor provisoriamente a intercambiar
+@ 	r3: almacena el valor provisoriamente a intercambiar
+@	r4: almacena el iterador que avanza desde el inicio del vector
+@	r5: almacena el index que indica la finalizacion de la funcion
 .thumb_func
 	asm_invertir:
+		push {r4-r5}
+		lsr r5, r1, #1 // r5 = r1/2
+		mov r4, #0
+	asm_invertir_loop:
+		sub r1, #1
+		ldrh r2, [r0, r1, LSL #1] // Cargo el valor a intercambiar r2 = *(r0 + (r1 << 1))
+		ldrh r3, [r0, r4, LSL #1] // Cargo el valor a intercambiar r3 = *(r0 + (r4 << 1))
+		strh r3, [r0, r1, LSL #1] // Guardo el valor a intercambiar *(r0 + (r1 << 1)) = r3
+		strh r2, [r0, r4, LSL #1] // Guardo el valor a intercambiar *(r0 + (r4 << 1)) = r2
+		add r4, #1
+		cmp r1, r5
+		bne asm_invertir_loop
+		pop {r4-r5}
+		bx lr
