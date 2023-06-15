@@ -235,10 +235,20 @@ int main(void)
   eco(audioSample, 4096);
   Ciclos = DWT->CYCCNT;
 
+  // Inicializo el vector de audio
+  for(int16_t i = 0; i < 4096; i++) {
+    audioSample[i] = i;
+  }
+
+  DWT->CYCCNT = 0;
+  eco_intrinsic_simd(audioSample, 4096);
+  Ciclos = DWT->CYCCNT;
+
   // Resultados de medicion funcion eco
   // SIMD 21013 CICLOS
   // ASM 41808 CICLOS
   // C 173676 CICLOS
+  // C Intrinsic SIMD 109341 CICLOS
 
   /* USER CODE END 2 */
 
@@ -570,10 +580,21 @@ void invertir(uint16_t * vector, uint32_t longitud) {
  * La función debe introducir un “eco” de la mitad de la amplitud de la muestra original a los 20ms de comenzada la grabación.
  * Nota: El eco consiste en adicionar a la señal original, la propia señal original dividida por dos y atrasada en 20ms.
 */
-#define ECO_DELAY 882 // 20ms a 44100 muestras/s
+#define ECO_DELAY 882
 void eco(int16_t * vector, uint32_t longitud) {
-	while(longitud-- > ECO_DELAY) {
+	while(longitud-- > 882) { // 882 = 20ms a 44100 muestras/s
 		vector[longitud] += vector[longitud-ECO_DELAY]/2;
+	}
+}
+
+#define ECO_DELAY_HALF 441
+void eco_intrinsic_simd(int16_t * vector, uint32_t longitud) {
+	longitud = longitud/2;
+	uint32_t eco;
+	uint32_t * vector_32 = vector;
+	while(longitud-- > ECO_DELAY_HALF) { // 441 = 20ms a 44100 muestras/s (tomando de a dos muestras)
+		eco = __SHADD16(vector_32[longitud-ECO_DELAY_HALF], 0);
+		vector_32[longitud] = __QADD16(vector_32[longitud], eco);
 	}
 }
 

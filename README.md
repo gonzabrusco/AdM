@@ -68,10 +68,13 @@ El CMSIS es un paquete de software en C provisto por ARM que nos permiten hacer 
 
 ### 18. ¿Qué es el systick? ¿Por qué puede afirmarse que su implementación favorece la portabilidad de los sistemas operativos embebidos?
 El Systick es el periferico que lleva la base de tiempo para los sistemas operativos. La ventaja de que este implementado como parte de la IP de ARM hace que los sistemas operativos que hacen uso del mismo sean facilmente portables entre procesadores Cortex (ej. FreeRTOS).
+
 ### 19. ¿Qué funciones cumple la unidad de protección de memoria (MPU)?
 La funcion del MPU es definir permisos y atributos de memoria. Por ejemplo, sirve para proteger la memoria de un Task de un RTOS del acceso desde otro Task que lo pueda corromper. Tambien sirve para proteger regiones de memoria del acceso desde tasks sin privilegio. Permite marcar sectores de memoria como non-executable para protegernos de ataques de inyección de codigo en la SRAM.
+
 ### 20. ¿Cuántas regiones pueden configurarse como máximo? ¿Qué ocurre en caso de haber solapamientos de las regiones? ¿Qué ocurre con las zonas de memoria no cubiertas por las regiones definidas?
 Permite configurar hasta 8 regiones como máximo. Si hay solapamiento de regiones, en la zona solapada los permisos que rigen son los de la región con mayor numero. Por ejemplo si la región 1 y región 4 se solapan, entonces en el espacio de memoria que se produce el solapamiento, los atributos y permisos de la región 4 aplican a esa zona. Si se intenta acceder a una zona de memoria no definida en el MPU, esa transferencia es bloqueada y se produce una exceptión.
+
 ### 21. ¿Para qué se suele utilizar la excepción PendSV? ¿Cómo se relaciona su uso con el resto de las excepciones? Dé un ejemplo
 
 ### 22. ¿Para qué se suele utilizar la excepción SVC? Expliquelo dentro de un marco de un sistema operativo embebido.
@@ -89,9 +92,17 @@ Las instrucciones de aritmética saturada son de mucha utilidad en procesamiento
 Por ejemplo, si la arquitectura fuera de 8 bits, un numero signado iría de -128 to 127. Si estuvieramos aplicando a amplificación x2 a una senoidal que tenía un valor pico pico de 140, nos quedaría una señal pico pico de 280. Pero ya sabemos que el rango de representacion de 8 bits es de 255 en total. Por ende, cuando se produzca el overflow para valores superiores a 127, esos valores se trasladaran a -128, -127, -125, etc. Es decir, lo que eran los valores mas altos de la senoidal ahora aparecerían como valores muy negativos. Lo mismo pasaría en la otra mitad del periodo pero al reves (los numeros que sean mas negativos que -128, aparecerán como 127, 126, 125, etc).
 
 ### 4. Describa brevemente la interfaz entre assembler y C ¿Cómo se reciben los argumentos de las funciones? ¿Cómo se devuelve el resultado? ¿Qué registros deben guardarse en la pila antes de ser modificados?
-Los argumentos se reciben en los registros 0 en adelante, dependiendo de la cantidad de parametros pasados. En cambio el valor de retorno siempre se devuelve por r0. Todos los registros deben ser guardados en el stack antes de llamar a una funcion. 
+Los argumentos se reciben en los registros r0, r1, r2 y r3, dependiendo de la cantidad de parametros pasados. Si tuviera más argumentos, los mismos se pasarían por stack. En cambio el valor de retorno siempre se devuelve por r0.
+Todos los registros del r4 inclusive en adelante deben ser guardados en el stack antes de ser utilizados. Toda esta informacion de pasaje de parametros se puede encontrar en el ARM calling convention.
 
 ### 5. ¿Qué es una instrucción SIMD? ¿En qué se aplican y que ventajas reporta su uso? Dé un ejemplo.
+Una instrucción SIMD es aquella que puede procesar multiples datos en simultaneo dentro de la misma operación. Conceptualmente lo que hacen es compartimentar los registros de 32bits en dos partes de 16bits o dos partes de 8bits y cuando operan, operan sobre estos "compartimentos" permitiendoles trabajar con dos o cuatro numeros en simultaneo.
+La ventaja principal es que en el mismo tiempo de ejecucion de una instruccion, se pueden realizar dos o cuatro operaciones más, dependiendo del tipo de dato contenido en el registro (16 o 8 bits).
+Un ejemplo de esto es la instruccion SHADD16 que toma las dos mitades de dos registros, hace una suma entre ellas y luego las divide por dos. Es decir, hace un promedio con cada mitad de los registros. A continuación se puede ver con mejor detalle lo que realiza:
+
+res[15:0]  = (val1[15:0]  + val2[15:0]) / 2
+res[31:16] = (val1[31:16] + val2[31:16]) / 2
+
 
 
 
