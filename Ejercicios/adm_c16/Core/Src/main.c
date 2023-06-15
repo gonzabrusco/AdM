@@ -130,7 +130,7 @@ static void PrivilegiosSVC (void)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  volatile uint32_t Ciclos;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -139,6 +139,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  // Inicializo contador de ciclos
+  DWT->CTRL |= 1 << DWT_CTRL_CYCCNTENA_Pos;
 
   /* USER CODE END Init */
 
@@ -206,10 +208,37 @@ int main(void)
   asm_invertir(arrayinvertir2, 13);
 
   int16_t audioSample[4096];
+  // Inicializo el vector de audio
   for(int16_t i = 0; i < 4096; i++) {
 	  audioSample[i] = i;
   }
+
+  DWT->CYCCNT = 0;
   asm_simd_eco(audioSample, 4096);
+  Ciclos = DWT->CYCCNT;
+
+  // Inicializo el vector de audio
+  for(int16_t i = 0; i < 4096; i++) {
+    audioSample[i] = i;
+  }
+
+  DWT->CYCCNT = 0;
+  asm_eco(audioSample, 4096);
+  Ciclos = DWT->CYCCNT;
+
+  // Inicializo el vector de audio
+  for(int16_t i = 0; i < 4096; i++) {
+    audioSample[i] = i;
+  }
+
+  DWT->CYCCNT = 0;
+  eco(audioSample, 4096);
+  Ciclos = DWT->CYCCNT;
+
+  // Resultados de medicion funcion eco
+  // SIMD 21013 CICLOS
+  // ASM 41808 CICLOS
+  // C 173676 CICLOS
 
   /* USER CODE END 2 */
 
