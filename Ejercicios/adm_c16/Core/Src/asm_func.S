@@ -14,6 +14,8 @@
 .global asm_max
 .global asm_downsampleM
 .global asm_invertir
+.global asm_eco
+.global asm_simd_eco
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -159,6 +161,7 @@
 @	r6: promedio
 @	r7: registro auxiliar donde se almacena el valor leido de memoria
 @	r8: el tamaño del a ventana (11)
+@
 .thumb_func
 	asm_filtroVentana10:
 		push {r4-r8}
@@ -210,6 +213,7 @@
 @
 @ Registros usados temporalmente:
 @	r3: almacena el valor a recortar
+@
 .thumb_func
 	asm_pack32to16:
     	subs r2, #1
@@ -233,6 +237,7 @@
 @ 	r2: almacena el valor provisoriamente leido de memoria
 @	r3: almacena el valor maximo registrado
 @	r4: almacena la posicion del valor maximo registrado
+@
 .thumb_func
 	asm_max:
 		push {r4}
@@ -270,6 +275,7 @@
 @ 	r5: iterador vector de salida
 @	r6: contador de muestras
 @	r7: muestra temporal
+@
 .thumb_func
 	asm_downsampleM:
 		push {r4-r7}
@@ -305,6 +311,7 @@
 @ 	r3: almacena el valor provisoriamente a intercambiar
 @	r4: almacena el iterador que avanza desde el inicio del vector
 @	r5: almacena el index que indica la finalizacion de la funcion
+@
 .thumb_func
 	asm_invertir:
 		push {r4-r5}
@@ -321,3 +328,70 @@
 		bne asm_invertir_loop
 		pop {r4-r5}
 		bx lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_eco(int16_t * vector, uint32_t longitud)
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: longitud del vector
+@
+@ Registros usados temporalmente:
+@ 	r2: almacena el valor de la señal
+@ 	r3: almacena el valor a sumar como eco
+@	r4: almacena el index del eco
+@	r5: almacena la constante de desfasaje del eco (882 en este caso)
+@
+.thumb_func
+	asm_eco:
+		push {r4-r5}
+		mov r5, #882
+	asm_eco_loop:
+		sub r1, #1 // Decremento el index
+		subs r4, r1, r5 // Calculo el index de la muestra a usar como eco
+		ldrh r2, [r0, r1, LSL #1] // Cargo el valor de la señal r2 = *(r0 + (r1 << 1))
+		ldrh r3, [r0, r4, LSL #1] // Cargo el valor del eco r3 = *(r0 + (r4 << 1))
+		asr	r3, #1 // Divido por dos el eco (shift aritmetico para preservar el signo en complemento a2)
+		add r2, r2, r3 // Calculo el nuevo valor de la señal con el eco sumado
+		ssat r2, #16, r2 // Hago que la señal sature si se excede del maximo representable por int16
+		strh r2, [r0, r1, LSL #1] // Guardo el nuevo valor de la señal con el eco sumado *(r0 + (r1 << 1)) = r2
+		bne asm_eco_loop
+		pop {r4-r5}
+		bx lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   void asm_simd_eco(int16_t * vector, uint32_t longitud)
+@
+@ NOTA: Idem funcion anterior pero haciendo uso de instrucciones SIMD
+@
+@ Parametros recibidos:
+@   r0: direccion del vector de entrada
+@   r1: longitud del vector
+@
+@ Registros usados temporalmente:
+@ 	r2: almacena el valor de la señal
+@ 	r3: almacena el valor a sumar como eco
+@	r4: almacena el index del eco
+@	r5: almacena la constante de desfasaje del eco (882 en este caso)
+@   r6: valor 0 provisorio para lograr la division en SIMD
+@
+.thumb_func
+	asm_simd_eco:
+		push {r4-r6}
+		lsr r1, #1 // Divido la longitud en 2 (el array siempre tiene que ser un numero par de muestras para poder usar esta funcion)
+		mov r5, #441 // 882 dividido 2
+		mov r6, #0
+	asm_simd_eco_loop:
+		sub r1, #1 // Decremento el index
+		subs r4, r1, r5 // Calculo el index de la muestra a usar como eco
+		ldr r2, [r0, r1, LSL #2] // Cargo DOS valores de la señal r2 = *(r0 + (r1 << 2))
+		ldr r3, [r0, r4, LSL #2] // Cargo DOS valores de eco r3 = *(r0 + (r4 << 2))
+		shadd16 r3, r3, r6 // r3[0]=(r3[0]+r6[0])/2 y r3[1]=(r3[1]+r6[1])/2 pero como r6=0 => r3[0]=r3[0]/2 y r3[1]=r3[1]/2 - Es decir, divido por dos las dos muestras de eco.
+		qadd16 r2, r2, r3 // Sumo de a 16 bits y saturo el resultado signado.
+		str r2, [r0, r1, LSL #2] // Guardo DOS nuevos valores de la señal con el eco sumado *(r0 + (r1 << 2)) = r2
+		bne asm_simd_eco_loop
+		pop {r4-r6}
+		bx lr
+

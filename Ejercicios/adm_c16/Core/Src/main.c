@@ -205,6 +205,12 @@ int main(void)
   asm_invertir(arrayinvertir1, 12);
   asm_invertir(arrayinvertir2, 13);
 
+  int16_t audioSample[4096];
+  for(int16_t i = 0; i < 4096; i++) {
+	  audioSample[i] = i;
+  }
+  asm_simd_eco(audioSample, 4096);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -530,6 +536,17 @@ void invertir(uint16_t * vector, uint32_t longitud) {
 	}
 }
 
+/* Ejercicio 10: Realizar una función que recibe un vector de 4096 valores de 16 bits (signados),
+ * que corresponden a muestras de audio tomadas a una tasa de muestreo de 44.100 muestras/s.
+ * La función debe introducir un “eco” de la mitad de la amplitud de la muestra original a los 20ms de comenzada la grabación.
+ * Nota: El eco consiste en adicionar a la señal original, la propia señal original dividida por dos y atrasada en 20ms.
+*/
+#define ECO_DELAY 882 // 20ms a 44100 muestras/s
+void eco(int16_t * vector, uint32_t longitud) {
+	while(longitud-- > ECO_DELAY) {
+		vector[longitud] += vector[longitud-ECO_DELAY]/2;
+	}
+}
 
 /* USER CODE END 4 */
 

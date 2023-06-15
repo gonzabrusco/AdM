@@ -63,6 +63,7 @@ void pack32to16(int32_t * vectorIn, int16_t *vectorOut, uint32_t longitud);
 int32_t max(int32_t * vectorIn, uint32_t longitud);
 void downsampleM(int32_t * vectorIn, int32_t * vectorOut, uint32_t longitud, uint32_t N);
 void invertir(uint16_t * vector, uint32_t longitud);
+void eco(int16_t * vector, uint32_t longitud);
 
 /* USER CODE END EFP */
 
