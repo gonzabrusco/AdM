@@ -218,7 +218,7 @@
 	asm_pack32to16:
     	subs r2, #1
     	ldr r3, [r0, r2, LSL #2] // Cargo el valor recortar r3 = *(r0 + (r2 << 2))
-    	lsr r3, r3, #16 // 16 bit shift a la derecha
+    	asr r3, r3, #16 // 16 bit shift a la derecha aritmetico!
 		strh r3, [r1, r2, LSL #1] // Guardamos el valor recortado *(r1 + (r2 << 1)) = r3
 		bne asm_pack32to16 // El flag Z queda seteado de la operacion subs
 		bx lr
