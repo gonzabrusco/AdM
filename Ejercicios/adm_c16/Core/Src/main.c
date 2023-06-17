@@ -244,11 +244,17 @@ int main(void)
   eco_intrinsic_simd(audioSample, 4096);
   Ciclos = DWT->CYCCNT;
 
-  // Resultados de medicion funcion eco
+  // Resultados de medicion funcion eco - DEBUG sin optimizacion
   // SIMD 21013 CICLOS
   // ASM 41808 CICLOS
   // C 173676 CICLOS
   // C Intrinsic SIMD 109341 CICLOS
+
+  // Optimizado O2 Release
+  // SIMD 20922
+  // ASM 41800
+  // C 35379
+  // C Instrinsics 24136
 
   /* USER CODE END 2 */
 
