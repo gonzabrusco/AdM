@@ -56,15 +56,22 @@ Los "CORE PERIPHERALS" son los perifericos que vienen con la I.P. de ARM y en ge
 En cambio el resto de los perifericos son los que implementa el fabricante y ya no estan incluidos como parte de la CMSIS de ARM sino que es necesario usar las capas de abstracción provistas por el fabricante. 
 
 ### 13. ¿Cómo se implementan las prioridades de las interrupciones? Dé un ejemplo
+La familia Cortex M posee un controlador de interrupciones programable denominado “nested vectored interrupt controller” (NVIC). En la NVIC hay excepciones cuya prioridad esta prestablecida y no puede ser modificada (reset, NMI, Hardfault) y excepciones que admiten configuración de prioridad.
+La prioridad de cada excepcion esta definida por un registro de 8 bits (por excepcion) y su valor puede ir de 0 a 255 dependiendo de cuantos bits de prioridad implemente el fabricante del silicio (determinado microcontrolador podría implementar 3 bits para definir la prioridad y por ende usar prioridades de 0 a 7).
+Con respecto al número en si mismo de la prioridad de la excepción, cuando más bajo significa más prioritario. Es decir, 0 es siempre la mayor prioridad (con excepción de reset, NMI y Hardfault que tienen prioridades negativas y por ende son siempre las mas prioritarias).
 
 ### 14. ¿Qué es el CMSIS? ¿Qué función cumple? ¿Quién lo provee? ¿Qué ventajas aporta?
 El CMSIS es un paquete de software en C provisto por ARM que nos permiten hacer uso de todas las funcionalidad estandar que tiene un Cortex. La ventaja de programar usando el CMSIS es que es muy facil portar el software de un procesador a otro, siempre y cuando ambos sean Cortex. 
 
 ### 15. Cuando ocurre una interrupción, asumiendo que está habilitada ¿Cómo opera el microprocesador para atender a la subrutina correspondiente? Explique con un ejemplo
+El procesador automaticamente detiene la ejecucion de lo que estaba haciendo (a menos que estuviera ejecutando una interrupcion de prioridad superior), comienza el proceso de Stacking (es decir, guarda todo el contexto en el stack), hace el vector fetch para saber la direccion del handler y luego comienza a ejecutar el handler en modo handler. Finalizada la ejecucion del handler, se comienza el proceso inverso. El procesador volvera a modo Thread o Handler dependiendo de como estaba ejecutando antes de saltar la interrupcion.
 
 ### 16. ¿Cómo cambia la operación de stacking al utilizar la unidad de punto flotante?
+La operacion de stacking cambia porque al utilizar la FPU el stacking debe guardar tambien los registros de punto flotante (S0 a S15) y el FPSR. Esto se ejecuta solo si el bit que indica que el FPU estaba siendo utilizado.
 
 ### 17. Explique las características avanzadas de atención a interrupciones: tail chaining y late arrival.
+Tail Chaining: Esto se produce cuando ocurren dos interrupciones anidadas de igual prioridad. Cuando se termina de ejecutar la interrupcion que se estaba ejecutando primera, inmediatamente pasa a ejecutar el handler de la segunda interrupcion. Es decir, no retorna (realiza el proceso inverso de stacking) al programa y luego ejecuta al siguiente interrupcion pendiente, sino que directamente pasa de un handler al siguiente sin hacer el de-stacking+stacking.
+Late Arrival: Esto se produce cuando se estaba conmutando a una interrupcion (aun no llegando al handler de la misma) y se produce otra interrupcion de mayor prioridad. En ese momento, cuando aun se estaba realizando el proceso de stacking, se hace el vector fetch de la interrupcion con mayor prioridad sin importar cual de las interrupciones fue primera en aparecer.
 
 ### 18. ¿Qué es el systick? ¿Por qué puede afirmarse que su implementación favorece la portabilidad de los sistemas operativos embebidos?
 El Systick es el periferico que lleva la base de tiempo para los sistemas operativos. La ventaja de que este implementado como parte de la IP de ARM hace que los sistemas operativos que hacen uso del mismo sean facilmente portables entre procesadores Cortex (ej. FreeRTOS).
@@ -76,6 +83,7 @@ La funcion del MPU es definir permisos y atributos de memoria. Por ejemplo, sirv
 Permite configurar hasta 8 regiones como máximo. Si hay solapamiento de regiones, en la zona solapada los permisos que rigen son los de la región con mayor numero. Por ejemplo si la región 1 y región 4 se solapan, entonces en el espacio de memoria que se produce el solapamiento, los atributos y permisos de la región 4 aplican a esa zona. Si se intenta acceder a una zona de memoria no definida en el MPU, esa transferencia es bloqueada y se produce una exceptión.
 
 ### 21. ¿Para qué se suele utilizar la excepción PendSV? ¿Cómo se relaciona su uso con el resto de las excepciones? Dé un ejemplo
+La excepcion PendSV se suele utilizar para realizar cambios de contexto en sistemas operativos (llamada desde Systick habitualmente cuando termina el time slice del SO). Es la excepción con menor prioridad y esto garantiza que nunca se ejecute un cambio de contexto en medio de una interrupcion importante.  
 
 ### 22. ¿Para qué se suele utilizar la excepción SVC? Expliquelo dentro de un marco de un sistema operativo embebido.
 En general se utiliza para que el programa pueda retornar a modo privilegiado. En el marco de un sistema operativo, el SVC se puede utilizar para forzar un llamado del Scheduler. 
